@@ -78,7 +78,13 @@ namespace VirtualBright.HelpUI
         public override void Tick()
         {
             base.Tick();
-            Icon.Texture = Input.GetGlyph(button, InputGlyphSize.Small);
+            var glyph = Input.GetGlyph(button, InputGlyphSize.Small);
+            Icon.Texture = glyph;
+            if (glyph == null)
+                Icon.Style.AspectRatio = 1f;
+            else
+                Icon.Style.AspectRatio = (float)glyph.Width / glyph.Height;
+            BlurBG.Style.AspectRatio = Icon.Style.AspectRatio;
             Style.Display = HelpUI.IsBound(button) ? DisplayMode.Flex : DisplayMode.None;
             if (TimeAlive > 0.25f)
             {
