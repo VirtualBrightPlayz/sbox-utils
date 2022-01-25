@@ -1,0 +1,49 @@
+HelpUI
+{
+    position: absolute;
+    width: 500px;
+    height: 250px;
+    bottom: 0;
+    left: 0;
+    justify-content: center;
+    flex-direction: column;
+}
+
+HelpUIEntry
+{
+    position: relative;
+    width: 100%;
+    height: 32px;
+    flex-direction: row;
+    margin: 10px;
+
+    .title
+    {
+        position: absolute;
+        left: 200px;
+        font-size: 24px;
+        color: white;
+        text-shadow: 0 0 10px black;
+        z-index: 1;
+    }
+
+    .icon
+    {
+        position: absolute;
+        left: 100px;
+        width: 32px;
+        height: 32px;
+        z-index: 1;
+    }
+
+    .blur
+    {
+        position: absolute;
+        left: 100px;
+        width: 32px;
+        height: 32px;
+        background-color: black;
+        filter: blur(10px);
+        z-index: 0;
+    }
+}
