@@ -3,7 +3,7 @@ using Sandbox;
 using Sandbox.UI;
 using Sandbox.UI.Construct;
 
-namespace VirtualBright.HelpUI
+namespace VirtualBright.Util
 {
     public partial class HelpUI : Panel
     {
