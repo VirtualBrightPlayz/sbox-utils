@@ -1,0 +1,95 @@
+{
+    "_comment": "DO NOT EDIT: FILE GENERATED AUTOMATICALLY BY PTERODACTYL PANEL - PTERODACTYL.IO",
+    "meta": {
+        "version": "PTDL_v1",
+        "update_url": null
+    },
+    "exported_at": "2022-03-31T11:42:59-07:00",
+    "name": "Xvfb-wine sbox",
+    "author": "virtualbrightplayz@gmail.com",
+    "description": "Xvfb and Wine",
+    "features": null,
+    "images": [
+        "ghcr.io\/virtualbrightplayz\/ptero-xvfb-wine:testdebian"
+    ],
+    "file_denylist": [],
+    "startup": "export STEAM_COMPAT_DATA_PATH=~\/compatdata && export STEAM_COMPAT_CLIENT_INSTALL_PATH=~\/steamcmd && ~\/protonexp\/proton run ~\/sbox-server.exe +hostip {{SERVER_IP}} +hostport {{SERVER_PORT}} +gamemode {{GAMEMODE}} +map {{SRCDS_MAP}} +hostname {{SERVER_NAME}}",
+    "config": {
+        "files": "{}",
+        "startup": "{\r\n    \"done\": \"Server Init\"\r\n}",
+        "logs": "{}",
+        "stop": "quit"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!\/bin\/bash\r\n\r\nexport DEBIAN_FRONTEND=noninteractive\r\n\r\ndpkg --add-architecture i386\r\napt update\r\napt upgrade -y\r\n#apt install -y wget net-tools iproute2\r\napt install -y wget net-tools iproute2 gnupg2 xvfb pulseaudio apt-transport-https software-properties-common lib32gcc1 curl libfreetype6:i386 openssh-client git git-lfs\r\n#apt install -y --install-recommends wine32\r\n#apt -y --no-install-recommends install curl lib32gcc1 ca-certificates\r\n\r\n#if [ ! -d \/mnt\/server\/.wine\/ ]; then\r\n#wget -nc https:\/\/dl.winehq.org\/wine-builds\/winehq.key\r\n#apt-key add winehq.key\r\n#mkdir -p \/etc\/apt\/sources.list.d\/\r\n#add-apt-repository 'deb https:\/\/dl.winehq.org\/wine-builds\/ubuntu\/ bionic main'\r\n#apt update\r\n#apt upgrade -y\r\n#apt-get install -y --install-recommends winehq-stable winbind\r\n#fi\r\n\r\ncd \/mnt\/server\/\r\n\r\n# backup server config\r\n#if [ -f \/mnt\/server\/server.cfg ]; then\r\n#    mv \/mnt\/server\/server.cfg \/mnt\/server\/server.cfg.old\r\n#fi\r\n\r\n#mkdir -p \/mnt\/server\/.wine\r\n#export WINEPREFIX=\/mnt\/server\/.wine\r\nchown -R root:root \/mnt\r\nexport HOME=\/mnt\/server\r\n\r\nexport WINEARCH=win64\r\n\r\n\r\n# if [ ! -d \/mnt\/server\/.wine\/ ]; then\r\n# mkdir -p \/mnt\/server\/.wine\r\n\r\n#wget -P \/mono http:\/\/dl.winehq.org\/wine\/wine-mono\/4.9.4\/wine-mono-4.9.4.msi\r\n#wineboot -u && msiexec \/i \/mono\/wine-mono-4.9.4.msi\r\n\r\n# wget  https:\/\/raw.githubusercontent.com\/Winetricks\/winetricks\/master\/src\/winetricks\r\n# chmod +x winetricks\r\n# .\/winetricks -q dotnet48\r\n# fi\r\n\r\n## just in case someone removed the defaults.\r\nif [ \"${STEAM_USER}\" == \"\" ]; then\r\n    echo -e \"steam user is not set.\\n\"\r\n    echo -e \"Using anonymous user.\\n\"\r\n    STEAM_USER=anonymous\r\n    STEAM_PASS=\"\"\r\n    STEAM_AUTH=\"\"\r\nelse\r\n    echo -e \"user set to ${STEAM_USER}\"\r\nfi\r\n\r\n## download and install steamcmd\r\ncd \/tmp\r\nmkdir -p \/mnt\/server\/steamcmd\r\ncurl -sSL -o steamcmd.tar.gz https:\/\/steamcdn-a.akamaihd.net\/client\/installer\/steamcmd_linux.tar.gz\r\ntar -xzvf steamcmd.tar.gz -C \/mnt\/server\/steamcmd\r\nmkdir -p \/mnt\/server\/steamapps # Fix steamcmd disk write error when this folder is missing\r\ncd \/mnt\/server\/steamcmd\r\n\r\n# SteamCMD fails otherwise for some reason, even running as root.\r\n# This is changed at the end of the install process anyways.\r\nchown -R root:root \/mnt\r\nexport HOME=\/mnt\/server\r\n\r\nWINDOWS_INSTALL=\"1\"\r\n\r\n## install game using steamcmd\r\n.\/steamcmd.sh +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} $( [[ \"${WINDOWS_INSTALL}\" == \"1\" ]] && printf %s '+@sSteamCmdForcePlatformType windows' ) +force_install_dir \/mnt\/server +app_update ${SRCDS_APPID} ${EXTRA_FLAGS} validate +quit ## other flags may be needed depending on install. looking at you cs 1.6\r\n\r\nmkdir -p \/mnt\/server\/proton\r\n.\/steamcmd.sh +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} +force_install_dir \/mnt\/server\/proton +app_update 1580130 validate +quit\r\n\r\nmkdir -p \/mnt\/server\/protonexp\r\n.\/steamcmd.sh +login ${STEAM_USER} ${STEAM_PASS} ${STEAM_AUTH} +force_install_dir \/mnt\/server\/protonexp +app_update 1493710 validate +quit\r\n\r\nmkdir -p \/mnt\/server\/compatdata\r\n\r\n\r\n## set up 32 bit libraries\r\nmkdir -p \/mnt\/server\/.steam\/sdk32\r\ncp -v linux32\/steamclient.so ..\/.steam\/sdk32\/steamclient.so\r\n\r\n## set up 64 bit libraries\r\nmkdir -p \/mnt\/server\/.steam\/sdk64\r\ncp -v linux64\/steamclient.so ..\/.steam\/sdk64\/steamclient.so\r\n\r\n# restore backup server config\r\nif [ -f \/mnt\/server\/server.cfg.old ]; then\r\n    mv \/mnt\/server\/server.cfg.old \/mnt\/server\/server.cfg\r\nfi\r\n\r\nif [ -f \/mnt\/server\/id_deploy ]; then\r\nexport GIT_TERMINAL_PROMPT=0\r\neval \"$(ssh-agent -s)\"\r\nssh-add \/mnt\/server\/id_deploy\r\nmkdir -p \/mnt\/server\/.ssh\r\ntouch \/mnt\/server\/.ssh\/known_hosts\r\nssh-keyscan github.com >> \/mnt\/server\/.ssh\/known_hosts\r\n\r\ngit clone --single-branch --branch ${INSTALL_BRANCH} ${INSTALL_REPO} ${INSTALL_PATH}\r\nfi",
+            "container": "ubuntu",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Game ID",
+            "description": "",
+            "env_variable": "SRCDS_APPID",
+            "default_value": "1892930",
+            "user_viewable": true,
+            "user_editable": false,
+            "rules": "required|string|max:20"
+        },
+        {
+            "name": "Map",
+            "description": "The default map for the server.",
+            "env_variable": "SRCDS_MAP",
+            "default_value": "baks.office",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Gamemode",
+            "description": "The gamemode of your server.",
+            "env_variable": "GAMEMODE",
+            "default_value": "facepunch.sandbox",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Git Repo",
+            "description": "",
+            "env_variable": "INSTALL_REPO",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Git Branch",
+            "description": "",
+            "env_variable": "INSTALL_BRANCH",
+            "default_value": "master",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "string|max:20"
+        },
+        {
+            "name": "Git Install Path",
+            "description": "",
+            "env_variable": "INSTALL_PATH",
+            "default_value": "addons\/myaddon",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        },
+        {
+            "name": "Server Name",
+            "description": "",
+            "env_variable": "SERVER_NAME",
+            "default_value": "SBox Server",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string"
+        }
+    ]
+}

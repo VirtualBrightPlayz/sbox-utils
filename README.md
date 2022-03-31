@@ -29,3 +29,7 @@ Just look at the `USAGE.md` and `API.md` for more info
 ```cs
 HelpUI.AddEntry(InputButton.Use, "Use");
 ```
+
+## Linux Server
+
+This is only as functional as proton/wine will make it, so don't expect everything to work perfectly. **DO NOT REPORT BUGS TO FACEPUNCH, they will provide a linux server in due time**
