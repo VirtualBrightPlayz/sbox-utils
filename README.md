@@ -1,7 +1,7 @@
 # sbox-utils
 A collection of utility scripts for s&amp;box gamemode devs
 
-## Other People's work
+## Similar Projects
 
 I will link similar projects to this (i.e., not a full gamemode, but a set of utility scripts).
 
